@@ -746,6 +746,32 @@ QList<AVRational> FileSourceFFmpegFile::getTimeBaseAllStreams()
   return timeBaseList;
 }
 
+QList<int64_t> FileSourceFFmpegFile::getDurationAllStreams()
+{
+  QList<int64_t> durationList;
+
+  for (unsigned i = 0; i < this->formatCtx.getNbStreams(); i++)
+  {
+    auto stream = this->formatCtx.getStream(i);
+    durationList.append(stream.getDuration());
+  }
+
+  return durationList;
+}
+
+QList<int> FileSourceFFmpegFile::getNumberFramesAllStreams()
+{
+  QList<int> numberFramesList;
+
+  for (unsigned i = 0; i < this->formatCtx.getNbStreams(); i++)
+  {
+    auto stream = this->formatCtx.getStream(i);
+    numberFramesList.append(stream.getNumberFrames());
+  }
+
+  return numberFramesList;
+}
+
 StringVec FileSourceFFmpegFile::getShortStreamDescriptionAllStreams()
 {
   StringVec descriptions;

@@ -96,11 +96,14 @@ private:
                                   const FFmpeg::PacketDataFormat       dataFormat,
                                   const BitratePlotModel::BitrateEntry packetBitrateEntry,
                                   std::shared_ptr<TreeItem>            item);
+  int getPacketDuration(FFmpeg::AVPacketWrapper &packet) const;
 
   // When the parser is used in the bitstream analysis window, the runParsingOfFile is used and
   // we update this list while parsing the file.
   QList<QStringPairList>    streamInfoAllStreams;
   QList<FFmpeg::AVRational> timeBaseAllStreams;
+  QList<int64_t>            durationAllStreams;
+  QList<int>                numberFramesAllStreams;
   StringVec                 shortStreamInfoAllStreams;
 
   int    videoStreamIndex{-1};

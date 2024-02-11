@@ -117,6 +117,8 @@ public:
   int          getVideoStreamIndex() { return video_stream.getIndex(); }
   QList<QStringPairList>    getFileInfoForAllStreams();
   QList<FFmpeg::AVRational> getTimeBaseAllStreams();
+  QList<int64_t>            getDurationAllStreams();
+  QList<int>                getNumberFramesAllStreams();
   StringVec                 getShortStreamDescriptionAllStreams();
 
   // Look through the keyframes and find the closest one before (or equal)

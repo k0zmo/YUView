@@ -339,6 +339,18 @@ AVCodecParametersWrapper AVStreamWrapper::getCodecpar()
   return this->codecpar;
 }
 
+int AVStreamWrapper::getNumberFrames()
+{
+  this->update();
+  return this->nb_frames;
+}
+
+int64_t AVStreamWrapper::getDuration()
+{
+  this->update();
+  return this->duration;
+}
+
 void AVStreamWrapper::update()
 {
   if (this->stream == nullptr)

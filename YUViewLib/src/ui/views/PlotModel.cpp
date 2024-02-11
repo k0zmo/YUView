@@ -45,7 +45,7 @@ std::optional<unsigned> PlotModel::getPointIndex(unsigned streamIndex, unsigned 
   const auto plotParam = this->getStreamParameter(streamIndex).plotParameters[plotIndex];
   if (plotParam.type == PlotModel::PlotType::Line)
   {
-    // For lines we go segment by segmen (always considering two points).
+    // For lines we go segment by segment (always considering two points).
     // In case of lines that go straight up/down, also consider 10% of the left and right segment to being this point.
     // For a line, we return the index of the end point of the segment.
     if (plotParam.nrpoints <= 1)

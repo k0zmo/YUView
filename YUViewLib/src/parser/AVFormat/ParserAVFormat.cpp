@@ -329,6 +329,39 @@ std::map<std::string, unsigned> ParserAVFormat::parseByteVectorAnnexBStartCodes(
   return naNames;
 }
 
+int ParserAVFormat::getPacketDuration(FFmpeg::AVPacketWrapper &packet) const
+{
+  auto duration = packet.getDuration();
+  if (duration == 0)
+  {
+    const auto streamIndex = packet.getStreamIndex();
+    // Unknown. We have to guess, assuming frames are equispaced.
+    if (streamIndex >= 0 &&
+        streamIndex < this->durationAllStreams.size() &&
+        streamIndex < this->numberFramesAllStreams.size())
+    {
+      const auto streamDuration = this->durationAllStreams[streamIndex];
+      const auto numberFrames = this->numberFramesAllStreams[streamIndex];
+      if (streamDuration != 0 && numberFrames != 0)
+        return streamDuration / numberFrames;
+
+      if (streamIndex == this->videoStreamIndex && this->framerate > 0 &&
+          streamIndex < this->timeBaseAllStreams.size())
+      {
+        auto videoTimeBase = this->timeBaseAllStreams[streamIndex];
+        if (videoTimeBase.num > 0)
+        {
+          duration = 1.0 / this->framerate * videoTimeBase.den / videoTimeBase.num;
+          return int(std::round(duration));
+        }
+      }
+
+      duration = 10; // The backup guess
+    }
+  }
+  return duration;
+}
+
 bool ParserAVFormat::parseAVPacket(unsigned         packetID,
                                    unsigned         streamPacketID,
                                    AVPacketWrapper &packet)
@@ -398,12 +431,12 @@ bool ParserAVFormat::parseAVPacket(unsigned         packetID,
 
     if (this->annexBParser)
     {
-      // Colloect the types of NALs to create a good name later
+      // Collect the types of NALs to create a good name later
       auto                           packetFormat = packet.guessDataFormatFromData();
       BitratePlotModel::BitrateEntry packetBitrateEntry;
       packetBitrateEntry.dts      = packet.getDTS();
       packetBitrateEntry.pts      = packet.getPTS();
-      packetBitrateEntry.duration = packet.getDuration();
+      packetBitrateEntry.duration = getPacketDuration(packet);
       unitNames                   = this->parseByteVectorAnnexBStartCodes(
           avpacketData, packetFormat, packetBitrateEntry, itemTree);
 
@@ -546,22 +579,7 @@ bool ParserAVFormat::parseAVPacket(unsigned         packetID,
     entry.bitrate   = packet.getDataSize();
     entry.keyframe  = packet.getFlagKeyframe();
     entry.frameType = entry.keyframe ? "Keyframe" : "Frame";
-    entry.duration  = packet.getDuration();
-    if (entry.duration == 0)
-    {
-      // Unknown. We have to guess.
-      entry.duration = 10; // The backup guess
-      if (this->framerate > 0 && this->videoStreamIndex >= 0 &&
-          this->videoStreamIndex < this->timeBaseAllStreams.size())
-      {
-        auto videoTimeBase = this->timeBaseAllStreams[this->videoStreamIndex];
-        if (videoTimeBase.num > 0)
-        {
-          auto duration  = 1.0 / this->framerate * videoTimeBase.den / videoTimeBase.num;
-          entry.duration = int(std::round(duration));
-        }
-      }
-    }
+    entry.duration  = getPacketDuration(packet);
 
     bitratePlotModel->addBitratePoint(packet.getStreamIndex(), entry);
   }
@@ -638,6 +656,8 @@ bool ParserAVFormat::runParsingOfFile(QString compressedFilePath)
   this->framerate                 = ffmpegFile.getFramerate();
   this->streamInfoAllStreams      = ffmpegFile.getFileInfoForAllStreams();
   this->timeBaseAllStreams        = ffmpegFile.getTimeBaseAllStreams();
+  this->durationAllStreams        = ffmpegFile.getDurationAllStreams();
+  this->numberFramesAllStreams    = ffmpegFile.getNumberFramesAllStreams();
   this->shortStreamInfoAllStreams = ffmpegFile.getShortStreamDescriptionAllStreams();
 
   emit streamInfoUpdated();
