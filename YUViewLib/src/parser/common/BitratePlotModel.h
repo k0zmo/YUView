@@ -58,9 +58,9 @@ public:
 
   struct BitrateEntry
   {
-    int     dts{0};
-    int     pts{0};
-    int     duration{1};
+    double  dts{0};
+    double  pts{0};
+    double  duration{1.};
     size_t  bitrate{0};
     bool    keyframe{false};
     QString frameType{};
@@ -82,8 +82,8 @@ private:
 
   unsigned int calculateAverageValue(unsigned streamIndex, unsigned pointIndex) const;
 
-  Range<int>                     rangeDts;
-  Range<int>                     rangePts;
+  Range<double>                  rangeDts;
+  Range<double>                  rangePts;
   QMap<unsigned int, Range<int>> rangeBitratePerStream;
   Range<double>                  yMaxStreamRange;
 };
