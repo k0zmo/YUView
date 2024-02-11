@@ -289,7 +289,9 @@ bool PixelFormatYUV::isValid() const
 bool PixelFormatYUV::canConvertToRGB(Size imageSize, std::string *whyNot) const
 {
   if (this->predefinedPixelFormat.has_value())
-    return true;
+    return *this->predefinedPixelFormat == PredefinedPixelFormat::V210
+               ? imageSize.width > 1 && imageSize.height > 1
+               : true;
   if (!this->isValid())
   {
     if (whyNot)
