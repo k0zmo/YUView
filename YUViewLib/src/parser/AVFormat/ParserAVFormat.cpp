@@ -434,9 +434,9 @@ bool ParserAVFormat::parseAVPacket(unsigned         packetID,
       // Collect the types of NALs to create a good name later
       auto                           packetFormat = packet.guessDataFormatFromData();
       BitratePlotModel::BitrateEntry packetBitrateEntry;
-      packetBitrateEntry.dts      = packet.getDTS();
-      packetBitrateEntry.pts      = packet.getPTS();
-      packetBitrateEntry.duration = getPacketDuration(packet);
+      packetBitrateEntry.dts      = (double(packet.getDTS() * timeBase.num) / timeBase.den) * 1000.0;
+      packetBitrateEntry.pts      = (double(packet.getPTS() * timeBase.num) / timeBase.den) * 1000.0;
+      packetBitrateEntry.duration = (double(getPacketDuration(packet) * timeBase.num) / timeBase.den) * 1000.0;
       unitNames                   = this->parseByteVectorAnnexBStartCodes(
           avpacketData, packetFormat, packetBitrateEntry, itemTree);
 
@@ -574,12 +574,12 @@ bool ParserAVFormat::parseAVPacket(unsigned         packetID,
   if (addBitrateEntryForPacket)
   {
     BitratePlotModel::BitrateEntry entry;
-    entry.pts       = packet.getPTS();
-    entry.dts       = packet.getDTS();
+    entry.pts       = (double(packet.getPTS() * timeBase.num) / timeBase.den) * 1000.0;
+    entry.dts       = (double(packet.getDTS() * timeBase.num) / timeBase.den) * 1000.0;
     entry.bitrate   = packet.getDataSize();
     entry.keyframe  = packet.getFlagKeyframe();
     entry.frameType = entry.keyframe ? "Keyframe" : "Frame";
-    entry.duration  = getPacketDuration(packet);
+    entry.duration = (double(getPacketDuration(packet) * timeBase.num) / timeBase.den) * 1000.0;
 
     bitratePlotModel->addBitratePoint(packet.getStreamIndex(), entry);
   }
