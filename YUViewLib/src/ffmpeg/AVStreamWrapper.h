@@ -62,6 +62,8 @@ public:
   QByteArray               getExtradata();
   int                      getIndex();
   AVCodecParametersWrapper getCodecpar();
+  int                      getNumberFrames();
+  int64_t                  getDuration();
 
 private:
   void update();
