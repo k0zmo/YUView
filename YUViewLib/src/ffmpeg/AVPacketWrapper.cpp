@@ -313,6 +313,16 @@ int AVPacketWrapper::getDataSize()
   return this->size;
 }
 
+bool AVPacketWrapper::hasPTS()
+{
+  return this->getPTS() != AV_NOPTS_VALUE;
+}
+
+bool AVPacketWrapper::hasDTS()
+{
+  return this->getDTS() != AV_NOPTS_VALUE;
+}
+
 PacketType AVPacketWrapper::getPacketType() const
 {
   return this->packetType;

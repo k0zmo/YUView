@@ -574,14 +574,17 @@ bool ParserAVFormat::parseAVPacket(unsigned         packetID,
   if (addBitrateEntryForPacket)
   {
     BitratePlotModel::BitrateEntry entry;
-    entry.pts       = (double(packet.getPTS() * timeBase.num) / timeBase.den) * 1000.0;
-    entry.dts       = (double(packet.getDTS() * timeBase.num) / timeBase.den) * 1000.0;
-    entry.bitrate   = packet.getDataSize();
-    entry.keyframe  = packet.getFlagKeyframe();
-    entry.frameType = entry.keyframe ? "Keyframe" : "Frame";
-    entry.duration = (double(getPacketDuration(packet) * timeBase.num) / timeBase.den) * 1000.0;
+    if (packet.hasPTS() || packet.hasDTS() )
+    {
+      entry.pts       = (double(packet.getPTS() * timeBase.num) / timeBase.den) * 1000.0;
+      entry.dts       = (double(packet.getDTS() * timeBase.num) / timeBase.den) * 1000.0;
+      entry.bitrate   = packet.getDataSize();
+      entry.keyframe  = packet.getFlagKeyframe();
+      entry.frameType = entry.keyframe ? "Keyframe" : "Frame";
+      entry.duration = (double(getPacketDuration(packet) * timeBase.num) / timeBase.den) * 1000.0;
 
-    bitratePlotModel->addBitratePoint(packet.getStreamIndex(), entry);
+      bitratePlotModel->addBitratePoint(packet.getStreamIndex(), entry);
+    }
   }
 
   // Set a useful name of the TreeItem (the root for this NAL)

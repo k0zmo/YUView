@@ -138,6 +138,8 @@ public:
   bool      getFlagDiscard();
   uint8_t * getData();
   int       getDataSize();
+  bool      hasPTS();
+  bool      hasDTS();
 
   // This info is set externally (in FileSourceFFmpegFile) based on the stream info
   PacketType getPacketType() const;
