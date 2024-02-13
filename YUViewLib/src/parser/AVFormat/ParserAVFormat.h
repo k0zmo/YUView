@@ -108,6 +108,7 @@ private:
 
   int    videoStreamIndex{-1};
   double framerate{-1.0};
+  double startPTS{0.};
 };
 
 } // namespace parser

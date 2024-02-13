@@ -411,11 +411,18 @@ bool ParserAVFormat::parseAVPacket(unsigned         packetID,
     return ss.str();
   };
 
+  int64_t dts = packet.getDTS();
+  int64_t pts = packet.getPTS();
+  if (packet.hasDTS() && !packet.hasPTS())
+    pts = dts;
+  else if (packet.hasPTS() && !packet.hasDTS())
+    dts = pts;
+
   // Log all the packet info
   itemTree->createChildItem("stream_index", packet.getStreamIndex());
   itemTree->createChildItem("Global AVPacket Count", packetID);
-  itemTree->createChildItem("pts", formatTimestamp(packet.getPTS(), timeBase));
-  itemTree->createChildItem("dts", formatTimestamp(packet.getDTS(), timeBase));
+  itemTree->createChildItem("pts", formatTimestamp(pts, timeBase));
+  itemTree->createChildItem("dts", formatTimestamp(dts, timeBase));
   itemTree->createChildItem("duration", formatTimestamp(packet.getDuration(), timeBase));
   itemTree->createChildItem("flag_keyframe", packet.getFlagKeyframe());
   itemTree->createChildItem("flag_corrupt", packet.getFlagCorrupt());
@@ -434,8 +441,8 @@ bool ParserAVFormat::parseAVPacket(unsigned         packetID,
       // Collect the types of NALs to create a good name later
       auto                           packetFormat = packet.guessDataFormatFromData();
       BitratePlotModel::BitrateEntry packetBitrateEntry;
-      packetBitrateEntry.dts      = (double(packet.getDTS() * timeBase.num) / timeBase.den) * 1000.0;
-      packetBitrateEntry.pts      = (double(packet.getPTS() * timeBase.num) / timeBase.den) * 1000.0;
+      packetBitrateEntry.dts      = (double(dts * timeBase.num) / timeBase.den) * 1000.0 - startPTS;
+      packetBitrateEntry.pts      = (double(pts * timeBase.num) / timeBase.den) * 1000.0 - startPTS;
       packetBitrateEntry.duration = (double(getPacketDuration(packet) * timeBase.num) / timeBase.den) * 1000.0;
       unitNames                   = this->parseByteVectorAnnexBStartCodes(
           avpacketData, packetFormat, packetBitrateEntry, itemTree);
@@ -576,8 +583,8 @@ bool ParserAVFormat::parseAVPacket(unsigned         packetID,
     BitratePlotModel::BitrateEntry entry;
     if (packet.hasPTS() || packet.hasDTS() )
     {
-      entry.pts       = (double(packet.getPTS() * timeBase.num) / timeBase.den) * 1000.0;
-      entry.dts       = (double(packet.getDTS() * timeBase.num) / timeBase.den) * 1000.0;
+      entry.pts       = (double(pts * timeBase.num) / timeBase.den) * 1000.0 - startPTS;
+      entry.dts       = (double(dts * timeBase.num) / timeBase.den) * 1000.0 - startPTS;
       entry.bitrate   = packet.getDataSize();
       entry.keyframe  = packet.getFlagKeyframe();
       entry.frameType = entry.keyframe ? "Keyframe" : "Frame";
@@ -668,6 +675,11 @@ bool ParserAVFormat::runParsingOfFile(QString compressedFilePath)
   // Now iterate over all packets and send them to the parser
   AVPacketWrapper packet   = ffmpegFile.getNextPacket(false, false);
   int64_t         start_ts = packet.getDTS();
+  if (packet.getStreamIndex() >= 0 && packet.getStreamIndex() < timeBaseAllStreams.size())
+  {
+    const AVRational timeBase = timeBaseAllStreams[packet.getStreamIndex()];
+    this->startPTS            = (double(start_ts * timeBase.num / timeBase.den) * 1000.0);
+  }
 
   unsigned                packetID{};
   std::map<int, unsigned> packetCounterPerStream;
