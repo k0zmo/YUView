@@ -675,7 +675,8 @@ bool ParserAVFormat::runParsingOfFile(QString compressedFilePath)
   // Now iterate over all packets and send them to the parser
   AVPacketWrapper packet   = ffmpegFile.getNextPacket(false, false);
   int64_t         start_ts = packet.getDTS();
-  if (packet.getStreamIndex() >= 0 && packet.getStreamIndex() < timeBaseAllStreams.size())
+  bool mediaPacketSeen = false;
+  if (start_ts != AV_NOPTS_VALUE && packet.getStreamIndex() >= 0 && packet.getStreamIndex() < timeBaseAllStreams.size())
   {
     const AVRational timeBase = timeBaseAllStreams[packet.getStreamIndex()];
     this->startPTS            = (double(start_ts * timeBase.num / timeBase.den) * 1000.0);
@@ -690,7 +691,10 @@ bool ParserAVFormat::runParsingOfFile(QString compressedFilePath)
   signalEmitTimer.start();
   while (!ffmpegFile.atEnd() && !abortParsing)
   {
-    if (packet.getPacketType() == PacketType::VIDEO)
+    const auto packetType = packet.getPacketType();
+    if (packetType == PacketType::VIDEO || packetType == PacketType::AUDIO)
+      mediaPacketSeen = true;
+    if (packetType == PacketType::VIDEO)
     {
       if (max_ts != 0)
         progressPercentValue =
@@ -711,6 +715,17 @@ bool ParserAVFormat::runParsingOfFile(QString compressedFilePath)
     packetID++;
     packetCounterPerStream[packet.getStreamIndex()]++;
     packet = ffmpegFile.getNextPacket(false, false);
+
+    // It might happen that the first packet is of type OTHER (like epg) and no DTS is provided
+    if (start_ts == AV_NOPTS_VALUE && !mediaPacketSeen)
+    {
+      start_ts = packet.getDTS();
+      if (start_ts != AV_NOPTS_VALUE && packet.getStreamIndex() >= 0 && packet.getStreamIndex() < timeBaseAllStreams.size())
+      {
+        const AVRational timeBase = timeBaseAllStreams[packet.getStreamIndex()];
+        this->startPTS            = (double(start_ts * timeBase.num / timeBase.den) * 1000.0);
+      }
+    }
 
     // For signal slot debugging purposes, sleep
     // QThread::msleep(200);
