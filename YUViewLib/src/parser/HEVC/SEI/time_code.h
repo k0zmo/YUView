@@ -1,6 +1,6 @@
 /*  This file is part of YUView - The YUV player with advanced analytics toolset
  *   <https://github.com/IENT/YUView>
- *   Copyright (C) 2015  Institut f�r Nachrichtentechnik, RWTH Aachen University, GERMANY
+ *   Copyright (C) 2015  Institut für Nachrichtentechnik, RWTH Aachen University, GERMANY
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -35,40 +35,42 @@
 #include "parser/common/SubByteReaderLogging.h"
 #include "sei_message.h"
 
-namespace parser::avc
+namespace parser::hevc
 {
 
-class seq_parameter_set_rbsp;
-
-class pic_timing : public sei_payload
+class time_code : public sei_payload
 {
 public:
-  pic_timing() = default;
+  time_code() = default;
 
   SEIParsingResult parse(reader::SubByteReaderLogging &          reader,
                          bool                                    reparse,
+                         VPSMap &                                vpsMap,
                          SPSMap &                                spsMap,
                          std::shared_ptr<seq_parameter_set_rbsp> associatedSPS) override;
 
-  unsigned cpb_removal_delay{};
-  unsigned dpb_output_delay{};
+  unsigned num_clock_ts{};
 
-  unsigned pic_struct{};
-  bool     clock_timestamp_flag[3]{};
-  unsigned ct_type[3]{};
-  bool     nuit_field_based_flag[3]{};
-  unsigned counting_type[3]{};
-  bool     full_timestamp_flag[3]{};
-  bool     discontinuity_flag[3]{};
-  bool     cnt_dropped_flag[3]{};
-  unsigned n_frames[3]{};
-  unsigned seconds_value[3]{};
-  unsigned minutes_value[3]{};
-  unsigned hours_value[3]{};
-  bool     seconds_flag[3]{};
-  bool     minutes_flag[3]{};
-  bool     hours_flag[3]{};
-  int      time_offset[3]{};
+  struct ClockTimestamp
+  {
+    bool     clock_timestamp_flag{};
+    bool     units_field_based_flag{};
+    unsigned counting_type{};
+    bool     full_timestamp_flag{};
+    bool     discontinuity_flag{};
+    bool     cnt_dropped_flag{};
+    unsigned n_frames{};
+    unsigned seconds_value{};
+    unsigned minutes_value{};
+    unsigned hours_value{};
+    bool     seconds_flag{};
+    bool     minutes_flag{};
+    bool     hours_flag{};
+    unsigned time_offset_length{};
+    int      time_offset_value{};
+  };
+
+  vector<ClockTimestamp> clockTimestamps;
 };
 
-} // namespace parser::avc
+} // namespace parser::hevc

@@ -40,6 +40,7 @@
 #include "parser/common/SubByteReaderLoggingOptions.h"
 #include "pic_timing.h"
 #include "three_dimensional_reference_displays_info.h"
+#include "time_code.h"
 #include "user_data_unregistered.h"
 #include <parser/common/Functions.h>
 
@@ -229,6 +230,8 @@ sei_message::parsePayloadData(bool                                    reparse,
         this->payload = std::make_shared<user_data_unregistered>();
       else if (this->payloadType == 129)
         this->payload = std::make_shared<active_parameter_sets>();
+      else if (this->payloadType == 136)
+        this->payload = std::make_shared<time_code>();
       else if (this->payloadType == 137)
         this->payload = std::make_shared<mastering_display_colour_volume>();
       else if (this->payloadType == 144)

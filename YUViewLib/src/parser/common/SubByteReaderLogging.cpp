@@ -201,6 +201,29 @@ uint64_t SubByteReaderLogging::readBits(const std::string &symbolName,
   }
 }
 
+int64_t SubByteReaderLogging::readSBits(const std::string &symbolName,
+                                        size_t             numBits,
+                                        const Options &    options)
+{
+  try
+  {
+    auto [value, code] = SubByteReader::readBits(numBits);
+    // Convert unsigned to signed using two's complement
+    int64_t signedValue = static_cast<int64_t>(value);
+    if (numBits > 0 && (value & (1ULL << (numBits - 1))))
+    {
+      // Sign extend: set all bits above numBits to 1
+      signedValue |= ~((1LL << numBits) - 1);
+    }
+    checkAndLog(this->currentTreeLevel, "i(v)", symbolName, options, signedValue, code);
+    return signedValue;
+  }
+  catch (const std::exception &ex)
+  {
+    this->logExceptionAndThrowError(ex, std::to_string(numBits) + " bit signed symbol " + symbolName);
+  }
+}
+
 bool SubByteReaderLogging::readFlag(const std::string &symbolName, const Options &options)
 {
   try

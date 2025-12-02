@@ -177,7 +177,7 @@ SEIParsingResult pic_timing::parse(SubByteReaderLogging &                  reade
         {
           auto nrBits =
               associatedSPS->seqParameterSetData.vuiParameters.nalHrdParameters.time_offset_length;
-          this->time_offset[i] = reader.readBits(formatArray("time_offset", i), nrBits);
+          this->time_offset[i] = reader.readSBits(formatArray("time_offset", i), nrBits);
         }
       }
     }
