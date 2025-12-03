@@ -1199,7 +1199,9 @@ void playlistItemCompressedVideo::getSupportedFileExtensions(QStringList &allExt
       << "mxf";
   QString filtersString = "FFmpeg files (";
   for (QString e : ext)
-    filtersString.append(QString("*.%1").arg(e));
+    filtersString.append(QString("*.%1 ").arg(e));
+  if (filtersString.endsWith(' '))
+    filtersString.chop(1);
   filtersString.append(")");
 
   allExtensions.append(ext);
