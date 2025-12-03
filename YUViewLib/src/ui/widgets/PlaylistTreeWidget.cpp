@@ -192,25 +192,21 @@ void PlaylistTreeWidget::dragMoveEvent(QDragMoveEvent *event)
   const auto dropTarget = getDropTarget(event->pos());
 #endif
 
-  if (!dropTarget)
+  if (dropTarget)
   {
-    event->ignore();
-    return;
-  }
+    const auto draggedItems = this->selectedItems();
+    if (!draggedItems.empty())
+    {
+      const auto draggedItem  = dynamic_cast<playlistItem *>(draggedItems[0]);
 
-  const auto draggedItems = this->selectedItems();
-  if (draggedItems.empty())
-  {
-    event->ignore();
-    return;
-  }
-
-  const auto draggedItem = dynamic_cast<playlistItem *>(draggedItems[0]);
-
-  if (!dropTarget->acceptDrops(draggedItem))
-  {
-    event->ignore();
-    return;
+      // handle video items as target
+      if (!dropTarget->acceptDrops(draggedItem))
+      {
+        // no valid drop
+        event->ignore();
+        return;
+      }
+    }
   }
 
   QTreeWidget::dragMoveEvent(event);
