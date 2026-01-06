@@ -34,6 +34,7 @@
 
 #include "../Typedef.h"
 #include "buffering_period.h"
+#include "display_orientation.h"
 #include "pic_timing.h"
 #include "unknown_sei.h"
 #include "user_data_unregistered.h"
@@ -185,6 +186,8 @@ SEIParsingResult sei_message::parsePayloadData(
     this->payload = std::make_shared<pic_timing>();
   else if (this->payloadType == 5)
     this->payload = std::make_shared<user_data_unregistered>();
+  else if (this->payloadType == 47)
+    this->payload = std::make_shared<display_orientation>();
   else
     this->payload = std::make_shared<unknown_sei>();
 

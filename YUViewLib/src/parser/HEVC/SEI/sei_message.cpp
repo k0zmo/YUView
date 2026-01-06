@@ -36,6 +36,7 @@
 #include "alternative_transfer_characteristics.h"
 #include "buffering_period.h"
 #include "content_light_level_info.h"
+#include "display_orientation.h"
 #include "mastering_display_colour_volume.h"
 #include "parser/common/SubByteReaderLoggingOptions.h"
 #include "pic_timing.h"
@@ -228,6 +229,8 @@ sei_message::parsePayloadData(bool                                    reparse,
         this->payload = std::make_shared<pic_timing>();
       else if (this->payloadType == 5)
         this->payload = std::make_shared<user_data_unregistered>();
+      else if (this->payloadType == 47)
+        this->payload = std::make_shared<display_orientation>();
       else if (this->payloadType == 129)
         this->payload = std::make_shared<active_parameter_sets>();
       else if (this->payloadType == 136)

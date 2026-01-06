@@ -49,7 +49,7 @@ std::tuple<uint64_t, std::string> SubByteReader::readBits(size_t nrBits)
   auto     nrBitsRead = nrBits;
 
   // The return unsigned int is of depth 64 bits
-  if (nrBits > 64)
+   if (nrBits > 64)
     throw std::logic_error("Trying to read more than 64 bits at once from the bitstream.");
   if (nrBits == 0)
     return {0, ""};
