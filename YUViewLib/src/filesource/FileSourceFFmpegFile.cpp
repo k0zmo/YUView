@@ -461,8 +461,8 @@ void FileSourceFFmpegFile::updateFileWatchSetting()
 std::pair<int64_t, size_t> FileSourceFFmpegFile::getClosestSeekableFrameBefore(int frameIdx) const
 {
   // We are always be able to seek to the beginning of the file
-  auto bestSeekDTS    = this->keyFrameList[0].dts;
-  auto seekToFrameIdx = this->keyFrameList[0].frame;
+  auto bestSeekDTS    = !this->keyFrameList.isEmpty() ? this->keyFrameList[0].dts : 0;
+  auto seekToFrameIdx = !this->keyFrameList.isEmpty() ? this->keyFrameList[0].frame : 0;
 
   for (const auto &pic : this->keyFrameList)
   {
